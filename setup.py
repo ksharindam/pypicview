@@ -1,6 +1,6 @@
 
 from setuptools import setup
-from ankita import __version__
+from pypicview import __version__
 
 def readme():
     with open('README.md') as f:

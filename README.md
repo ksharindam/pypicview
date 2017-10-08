@@ -29,7 +29,7 @@ To run after installing, type command..
 Or  
   `pypicview image.jpg`  
 If you want to run this program without/before installing, then  
-Open terminal and change directory to ankita-master and run  
+Open terminal and change directory to pypicview-master and run  
   `./pyPicView`  
 Or  
   `./pyPicView image.jpg`  

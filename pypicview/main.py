@@ -2,15 +2,16 @@
 
 import sys, os
 sys.path.append(os.path.dirname(__file__)) # A workout for enabling python 2 like import
+from __init__ import __version__
 
-from PyQt5.QtCore import (pyqtSignal, QPoint, Qt, QSettings, QFileInfo, QTimer, QRect, QRectF, QSize )
-from PyQt5.QtGui import QIcon, QPainter, QPixmap, QImageReader, QTransform, QIcon, QIntValidator, QPainter, QPen
+from PyQt5.QtCore import (pyqtSignal, QPoint, Qt, QSettings, QFileInfo, QTimer, QRect, QSize )
+from PyQt5.QtGui import QIcon, QPainter, QPen, QColor, QPixmap, QImageReader, QTransform, QIntValidator
 from PyQt5.QtWidgets import ( QApplication, QMainWindow, QLabel, QHBoxLayout, QSizePolicy, 
         QDialog, QFileDialog, QInputDialog, QCheckBox, QDoubleSpinBox, QPushButton )
 
 from mainwindow import Ui_MainWindow
 from resize_dialog import Ui_ResizeDialog
-from __init__ import __version__
+from photogrid import GridDialog
 
 
 class Image(QLabel):
@@ -118,8 +119,16 @@ class Image(QLabel):
 
     def drawCropBox(self):
         pm = self.pm_tmp.copy()
+        pm_box = pm.copy(self.p1.x(), self.p1.y(), self.p2.x()-self.p1.x(), self.p2.y()-self.p1.y())
         painter = QPainter(pm)
+        painter.fillRect(0,0, pm.width(), pm.height(), QColor(127,127,127,127))
+        painter.drawPixmap(self.p1.x(), self.p1.y(), pm_box)
         painter.drawRect(self.p1.x(), self.p1.y(), self.p2.x()-self.p1.x(), self.p2.y()-self.p1.y())
+        painter.drawRect(self.p1.x(), self.p1.y(), 59, 59)
+        painter.drawRect(self.p2.x(), self.p2.y(), -59, -59)
+        painter.setPen(Qt.white)
+        painter.drawRect(self.p1.x()+1, self.p1.y()+1, 57, 57)
+        painter.drawRect(self.p2.x()-1, self.p2.y()-1, -57, -57)
         painter.end()
         self.setPixmap(pm)
         self.imageUpdated.emit()
@@ -178,10 +187,27 @@ class Window(QMainWindow, Ui_MainWindow):
         self.slideShowBtn.clicked.connect(self.playSlideShow)
         # Connect other signals
         self.image.imageUpdated.connect(self.updateStatus)
+        # Connect Shortcuts
+        self.openBtn.setShortcut('Ctrl+O')
+        self.saveBtn.setShortcut('Ctrl+S')
+        self.resizeBtn.setShortcut('Ctrl+R')
+        self.cropBtn.setShortcut('Ctrl+X')
+        self.addBorderBtn.setShortcut('Ctrl+B')
+        self.photoGridBtn.setShortcut('Ctrl+G')
+        self.quitBtn.setShortcut('Esc')
+        self.prevBtn.setShortcut('Left')
+        self.nextBtn.setShortcut('Right')
+        self.zoomInBtn.setShortcut('+')
+        self.zoomOutBtn.setShortcut('-')
+        self.origSizeBtn.setShortcut('1')
+        self.rotateLeftBtn.setShortcut('Ctrl+Left')
+        self.rotateRightBtn.setShortcut('Ctrl+Right')
+        self.slideShowBtn.setShortcut('Space')
 
     def openFile(self, filepath=False):
         if not filepath :
-            filepath, sel_filter = QFileDialog.getOpenFileName(self, 'Open Image', self.filepath)            
+            filefilter = "Image files (*.jpg *.png *.jpeg *.svg *.gif);;JPEG Images (*.jpg *.jpeg);;All Files (*)"
+            filepath, sel_filter = QFileDialog.getOpenFileName(self, 'Open Image', self.filepath, filefilter)            
             if filepath == '' : return
         image_reader = QImageReader(filepath)
         image_reader.setAutoTransform(True)
@@ -196,12 +222,16 @@ class Window(QMainWindow, Ui_MainWindow):
             print('Error : could not open file')
 
     def saveFile(self):
-        # TODO : Add file filters, set jpeg quality
-        filepath, sel_filter = QFileDialog.getSaveFileName(self, 'Save Image', self.filepath)
+        quality = -1
+        filefilter = "Image files (*.jpg *.png *.jpeg);;JPEG Images (*.jpg *.jpeg)"
+        filepath, sel_filter = QFileDialog.getSaveFileName(self, 'Save Image', self.filepath, filefilter)
         if filepath != '':
+            if sel_filter=='JPEG Images (*.jpg *.jpeg)':
+                val, ok = QInputDialog.getInt(self, "Set Quality", "Set Image Quality (%) :", 75, 10, 100)
+                if ok : quality = val
             pm = self.image.pic
             if not pm.isNull():
-                pm.save(filepath, 0, -1)
+                pm.save(filepath, None, quality)
 
     def resizeImage(self):
         dialog = ResizeDialog(self, self.image.pic.width(), self.image.pic.height())
@@ -229,6 +259,7 @@ class Window(QMainWindow, Ui_MainWindow):
             spinWidth = QDoubleSpinBox(self.statusbar)
             spinWidth.setRange(0.1, 9.9)
             spinWidth.setSingleStep(0.1)
+            spinWidth.setDecimals(1)
             spinWidth.setMaximumWidth(40)
             spinWidth.setValue(3.5)
             spinWidth.setEnabled(False)
@@ -238,6 +269,7 @@ class Window(QMainWindow, Ui_MainWindow):
             spinHeight = QDoubleSpinBox(self.statusbar)
             spinHeight.setRange(0.1, 9.9)
             spinHeight.setSingleStep(0.1)
+            spinHeight.setDecimals(1)
             spinHeight.setMaximumWidth(40)
             spinHeight.setValue(4.5)
             spinHeight.setEnabled(False)
@@ -276,7 +308,11 @@ class Window(QMainWindow, Ui_MainWindow):
             self.image.showScaled()
 
     def createPhotoGrid(self):
-        pass
+        dialog = GridDialog(self.image.pic, self)
+        if dialog.exec_() == 1:
+            self.image.scale = self.getOptimumScale(dialog.gridPaper.photo_grid)
+            self.image.setImage(dialog.gridPaper.photo_grid)
+            self.adjustWindowSize()
 
     def openPrevImage(self):
         fi = QFileInfo(self.filepath)
@@ -335,7 +371,7 @@ class Window(QMainWindow, Ui_MainWindow):
         img_height = pixmap.height()
         btnboxwidth = self.frame.width()
         max_width = self.screen_width - (2*btnboxwidth + 2*self.offset_x)
-        max_height = self.screen_height - (self.offset_y + self.offset_x + 4+32) # 32 for statusbar height in crop mode
+        max_height = self.screen_height - (self.offset_y + self.offset_x + 4+32) # 32 for statusbar with buttons
         if img_width > max_width or img_height > max_height :
             if (max_width/max_height > img_width/img_height) :
                 scale = max_height/img_height
@@ -356,7 +392,6 @@ class Window(QMainWindow, Ui_MainWindow):
         if self.image.crop_mode:
             width = (self.image.p2.x() - self.image.p1.x() + 1)/self.image.scaleW
             height = (self.image.p2.y() - self.image.p1.y() + 1)/self.image.scaleH
-            print(width, height)
         else:
             width = self.image.pic.width()
             height = self.image.pic.height()

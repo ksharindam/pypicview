@@ -10,6 +10,12 @@
     <height>409</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>613</width>
+    <height>409</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>pyPicView</string>
   </property>
