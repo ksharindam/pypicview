@@ -4,8 +4,8 @@ import sys, os
 sys.path.append(os.path.dirname(__file__)) # A workout for enabling python 2 like import
 from __init__ import __version__
 
-from PyQt5.QtCore import (pyqtSignal, QPoint, Qt, QSettings, QFileInfo, QTimer, QRect, QSize )
-from PyQt5.QtGui import QIcon, QPainter, QPen, QColor, QPixmap, QImageReader, QTransform, QIntValidator
+from PyQt5.QtCore import (pyqtSignal, QPoint, Qt, QSettings, QFileInfo, QTimer, QRect, QSize, QEventLoop, QSettings )
+from PyQt5.QtGui import QIcon, QPainter, QPen, QColor, QPixmap, QImageReader, QMovie, QTransform, QIntValidator
 from PyQt5.QtWidgets import ( QApplication, QMainWindow, QLabel, QHBoxLayout, QSizePolicy, 
         QDialog, QFileDialog, QInputDialog, QCheckBox, QDoubleSpinBox, QPushButton )
 
@@ -24,6 +24,12 @@ class Image(QLabel):
         self.mouse_pressed = False
         self.crop_mode = False
         self.scale = 1.0
+
+    def setAnimation(self, anim):
+        self.scale = 1.0
+        self.pic = QPixmap()
+        self.setMovie(anim)
+        anim.start()
 
     def setImage(self, pixmap):
         self.pic = pixmap                # Save original pixmap
@@ -158,13 +164,15 @@ class Window(QMainWindow, Ui_MainWindow):
         layout.addWidget(self.image)
         self.slideShowBtn.setCheckable(True)
         self.connectSignals()
+        self.settings = QSettings(self)
         # Initialize Variables
         desktop = QApplication.desktop()
         self.screen_width = desktop.availableGeometry().width()
         self.screen_height = desktop.availableGeometry().height()
         self.timer = False
         self.filepath = ''
-        self.offset_x, self.offset_y = 4, 26
+        self.offset_x = int(self.settings.value("OffsetX", 4))
+        self.offset_y = int(self.settings.value("OffsetY", 26))
         self.crop_widgets = []
 
     def connectSignals(self):
@@ -209,17 +217,23 @@ class Window(QMainWindow, Ui_MainWindow):
             filefilter = "Image files (*.jpg *.png *.jpeg *.svg *.gif);;JPEG Images (*.jpg *.jpeg);;All Files (*)"
             filepath, sel_filter = QFileDialog.getOpenFileName(self, 'Open Image', self.filepath, filefilter)            
             if filepath == '' : return
-        image_reader = QImageReader(filepath)
-        image_reader.setAutoTransform(True)
-        pm = QPixmap.fromImageReader(image_reader)
-        if not pm.isNull() :
+        if filepath.endswith('.gif'): # For gif animations
+            anim = QMovie(filepath)
+            self.image.setAnimation(anim)
+            self.adjustWindowSize(True)
+            self.statusbar.showMessage("Resolution : %ix%i" % (self.image.width(), self.image.height()))
+        else:                         # For static images
+          image_reader = QImageReader(filepath)
+          image_reader.setAutoTransform(True)
+          pm = QPixmap.fromImageReader(image_reader)
+          if not pm.isNull() :
             self.image.scale = self.getOptimumScale(pm)
             self.image.setImage(pm)
             self.adjustWindowSize()
-            self.filepath = filepath
-            self.setWindowTitle(QFileInfo(filepath).fileName())
-        else:
-            print('Error : could not open file')
+          else:
+            return
+        self.filepath = filepath
+        self.setWindowTitle(QFileInfo(filepath).fileName())
 
     def saveFile(self):
         quality = -1
@@ -381,9 +395,14 @@ class Window(QMainWindow, Ui_MainWindow):
             scale = 1.0
         return scale
 
-    def adjustWindowSize(self):
+    def adjustWindowSize(self, animation=False):
         btnboxwidth = self.frame.width()
-        self.resize(self.image.pixmap().width() + 2*btnboxwidth + 4, 
+        if animation:
+            wait(30)        # Wait little to let Label resize and get correct width height
+            self.resize(self.image.width() + 2*btnboxwidth + 4, 
+                    self.image.height() + 4+32)
+        else:
+            self.resize(self.image.pixmap().width() + 2*btnboxwidth + 4, 
                     self.image.pixmap().height() + 4+32)
         self.move((self.screen_width - (self.width() + 2*self.offset_x) )/2, 
                   (self.screen_height - (self.height() + self.offset_x + self.offset_y))/2 )
@@ -397,6 +416,11 @@ class Window(QMainWindow, Ui_MainWindow):
             height = self.image.pic.height()
         text = "Resolution : %ix%i , Scale : %3.2fx" % (width, height, self.image.scale)
         self.statusbar.showMessage(text)
+
+    def closeEvent(self, ev):
+        self.settings.setValue('OffsetX', self.geometry().x()-self.x())
+        self.settings.setValue('OffsetY', self.geometry().y()-self.y())
+        QMainWindow.closeEvent(self, ev)
 
 class ResizeDialog(QDialog, Ui_ResizeDialog):
     def __init__(self, parent, img_width, img_height):
@@ -426,6 +450,10 @@ class ResizeDialog(QDialog, Ui_ResizeDialog):
         self.widthEdit.setText( str(round(DPI * self.spinWidth.value()/2.54)))
         self.heightEdit.setText( str(round(DPI * self.spinHeight.value()/2.54)))
         
+def wait(millisec):
+    loop = QEventLoop()
+    QTimer.singleShot(millisec, loop.quit)
+    loop.exec_()
 
 def main():
     app = QApplication(sys.argv)
