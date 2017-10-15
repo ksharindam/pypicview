@@ -1,8 +1,13 @@
 from photogrid_dialog import Ui_GridDialog
-from PyQt5.QtCore import Qt, pyqtSignal, QRect, QPoint
-from PyQt5.QtGui import QPixmap, QPainter, QImageReader
-from PyQt5.QtWidgets import QLabel, QDialog, QHBoxLayout, QSizePolicy, QFileDialog
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QRect, QPoint
+from PyQt5.QtGui import QPixmap, QPainter, QImageReader, QPen
+from PyQt5.QtWidgets import QLabel, QDialog, QHBoxLayout, QSizePolicy, QFileDialog, QMessageBox
 
+helptext = '''Click on a image thumbnail to select an image to drop. Then click on the blank boxes to drop the selected photo.
+
+If you want to create grid with more different photos then load photo by clicking Add Photo button.
+
+You can change the photo of a box by selecting another image and clicking over the box.'''
 
 class GridDialog(QDialog, Ui_GridDialog):
     def __init__(self, pixmap, parent):
@@ -13,10 +18,14 @@ class GridDialog(QDialog, Ui_GridDialog):
         layout.setContentsMargins(0, 0, 0, 0)
         self.gridPaper = GridPaper(self)
         layout.addWidget(self.gridPaper)
+        self.thumbnailGr = ThumbnailGroup(self)
         thumbnail = Thumbnail(pixmap, self.frame)
         self.verticalLayout.addWidget(thumbnail)
+        thumbnail.select(True)
         thumbnail.clicked.connect(self.gridPaper.setPhoto)
+        self.thumbnailGr.append(thumbnail)
         self.addPhotoBtn.clicked.connect(self.addPhoto)
+        self.helpBtn.clicked.connect(self.showHelp)
         self.gridPaper.photo = pixmap
 
     def addPhoto(self):
@@ -29,11 +38,16 @@ class GridDialog(QDialog, Ui_GridDialog):
             thumbnail = Thumbnail(pm, self.frame)
             self.verticalLayout.addWidget(thumbnail)
             thumbnail.clicked.connect(self.gridPaper.setPhoto)
+            self.thumbnailGr.append(thumbnail)
 
     def accept(self):
         # Create final grid when ok is clicked
         self.gridPaper.createFinalGrid()
         QDialog.accept(self)
+
+    def showHelp(self):
+        global helptext
+        dialog = QMessageBox.about(self, 'How to Create Grid', helptext)
 
 class Thumbnail(QLabel):
     clicked = pyqtSignal(QPixmap)
@@ -46,6 +60,33 @@ class Thumbnail(QLabel):
     def mousePressEvent(self, ev):
         self.clicked.emit(self.photo)
 
+    def select(self, select):
+        if select:
+            pm = self.photo.scaledToWidth(100)
+            painter = QPainter(pm)
+            pen = QPen(Qt.blue)
+            pen.setWidth(4)
+            painter.setPen(pen)
+            painter.drawRect(2, 2 , 100-4, pm.height()-4)
+            painter.end()
+            self.setPixmap(pm)
+        else:
+            self.setPixmap(self.photo.scaledToWidth(100))
+
+class ThumbnailGroup(QObject):
+    def __init__(self, parent):
+        QObject.__init__(self, parent)
+        self.thumbnails = []
+
+    def append(self, thumbnail):
+        self.thumbnails.append(thumbnail)
+        thumbnail.clicked.connect(self.selectThumbnail)
+
+    def selectThumbnail(self):
+        ''' This can only be used as slot connect to Thumbnail obj'''
+        for thumbnail in self.thumbnails:
+            thumbnail.select(False)
+        self.sender().select(True)
 
 class GridPaper(QLabel):
     def __init__(self, parent):

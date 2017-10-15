@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>480</height>
+    <width>657</width>
+    <height>469</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -68,20 +68,27 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>544</width>
-        <height>442</height>
+        <width>561</width>
+        <height>431</height>
        </rect>
       </property>
      </widget>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
+   <item row="2" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QPushButton" name="helpBtn">
+     <property name="text">
+      <string>Help</string>
      </property>
     </widget>
    </item>

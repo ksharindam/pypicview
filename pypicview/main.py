@@ -22,6 +22,7 @@ class Image(QLabel):
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.setMouseTracking(True)
         self.mouse_pressed = False
+        self.animation = False
         self.crop_mode = False
         self.scale = 1.0
 
@@ -30,6 +31,7 @@ class Image(QLabel):
         self.pic = QPixmap()
         self.setMovie(anim)
         anim.start()
+        self.animation = True
 
     def setImage(self, pixmap):
         self.pic = pixmap                # Save original pixmap
@@ -37,6 +39,7 @@ class Image(QLabel):
         # These gives better accuracy while cropping downscaled image
         self.scaleW = self.pixmap().width()/self.pic.width()
         self.scaleH = self.pixmap().height()/self.pic.height()
+        self.animation = False
 
     def showScaled(self):
         if self.scale == 1.0:
@@ -222,6 +225,7 @@ class Window(QMainWindow, Ui_MainWindow):
             self.image.setAnimation(anim)
             self.adjustWindowSize(True)
             self.statusbar.showMessage("Resolution : %ix%i" % (self.image.width(), self.image.height()))
+            self.disableButtons(True)
         else:                         # For static images
           image_reader = QImageReader(filepath)
           image_reader.setAutoTransform(True)
@@ -230,6 +234,7 @@ class Window(QMainWindow, Ui_MainWindow):
             self.image.scale = self.getOptimumScale(pm)
             self.image.setImage(pm)
             self.adjustWindowSize()
+            self.disableButtons(False)
           else:
             return
         self.filepath = filepath
@@ -243,7 +248,10 @@ class Window(QMainWindow, Ui_MainWindow):
             if sel_filter=='JPEG Images (*.jpg *.jpeg)':
                 val, ok = QInputDialog.getInt(self, "Set Quality", "Set Image Quality (%) :", 75, 10, 100)
                 if ok : quality = val
-            pm = self.image.pic
+            if self.image.animation:
+                pm = self.image.movie().currentPixmap()
+            else:
+                pm = self.image.pic
             if not pm.isNull():
                 pm.save(filepath, None, quality)
 
@@ -416,6 +424,17 @@ class Window(QMainWindow, Ui_MainWindow):
             height = self.image.pic.height()
         text = "Resolution : %ix%i , Scale : %3.2fx" % (width, height, self.image.scale)
         self.statusbar.showMessage(text)
+
+    def disableButtons(self, disable):
+        self.resizeBtn.setDisabled(disable)
+        self.cropBtn.setDisabled(disable)
+        self.addBorderBtn.setDisabled(disable)
+        self.photoGridBtn.setDisabled(disable)
+        self.zoomInBtn.setDisabled(disable)
+        self.zoomOutBtn.setDisabled(disable)
+        self.origSizeBtn.setDisabled(disable)
+        self.rotateLeftBtn.setDisabled(disable)
+        self.rotateRightBtn.setDisabled(disable)
 
     def closeEvent(self, ev):
         self.settings.setValue('OffsetX', self.geometry().x()-self.x())

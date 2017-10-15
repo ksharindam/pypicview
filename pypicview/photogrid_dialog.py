@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_GridDialog(object):
     def setupUi(self, GridDialog):
         GridDialog.setObjectName("GridDialog")
-        GridDialog.resize(640, 480)
+        GridDialog.resize(657, 469)
         self.gridLayout = QtWidgets.QGridLayout(GridDialog)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setHorizontalSpacing(0)
@@ -34,7 +34,7 @@ class Ui_GridDialog(object):
         self.scrollArea.setAlignment(QtCore.Qt.AlignCenter)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 544, 442))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 561, 431))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.gridLayout.addWidget(self.scrollArea, 0, 1, 1, 1)
@@ -42,7 +42,10 @@ class Ui_GridDialog(object):
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
-        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 2)
+        self.gridLayout.addWidget(self.buttonBox, 2, 1, 1, 1)
+        self.helpBtn = QtWidgets.QPushButton(GridDialog)
+        self.helpBtn.setObjectName("helpBtn")
+        self.gridLayout.addWidget(self.helpBtn, 2, 0, 1, 1)
 
         self.retranslateUi(GridDialog)
         self.buttonBox.accepted.connect(GridDialog.accept)
@@ -53,4 +56,5 @@ class Ui_GridDialog(object):
         _translate = QtCore.QCoreApplication.translate
         GridDialog.setWindowTitle(_translate("GridDialog", "Create Photo Grid"))
         self.addPhotoBtn.setText(_translate("GridDialog", "Add Photo"))
+        self.helpBtn.setText(_translate("GridDialog", "Help"))
 
