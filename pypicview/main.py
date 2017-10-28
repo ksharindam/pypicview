@@ -153,8 +153,8 @@ class Image(QLabel):
 
     def cropImage(self):
         w, h = (self.btmright.x()-self.topleft.x()+1)/self.scaleW, (self.btmright.y()-self.topleft.y()+1)/self.scaleH
-        self.pic = self.pic.copy(self.topleft.x()/self.scaleW, self.topleft.y()/self.scaleH, w, h)
-        self.showScaled()
+        pm = self.pic.copy(self.topleft.x()/self.scaleW, self.topleft.y()/self.scaleH, w, h)
+        self.setImage(pm)
 
 
 class Window(QMainWindow, Ui_MainWindow):

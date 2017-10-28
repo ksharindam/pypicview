@@ -6,9 +6,7 @@ Python Module Name = pypicview
 Debian Dependency = python3-pyqt5
 Description = A simple useful image viewer with some useful features.
 Changes :
-        Disable all view and edit features for gif
-        Helo text and image selection added to Grid dialog
-        All edit buttons are disabled for gif animations
+        Fixed : little inaccuracy atter cropping downscaled image.
 
 ...........................................................................
 |   Copyright (C) 2017 Arindam Chaudhuri <ksharindam@gmail.com>       |
