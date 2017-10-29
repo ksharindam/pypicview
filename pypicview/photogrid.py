@@ -47,7 +47,7 @@ class GridDialog(QDialog, Ui_GridDialog):
 
     def showHelp(self):
         global helptext
-        dialog = QMessageBox.about(self, 'How to Create Grid', helptext)
+        QMessageBox.about(self, 'How to Create Grid', helptext)
 
 class Thumbnail(QLabel):
     clicked = pyqtSignal(QPixmap)
@@ -101,14 +101,14 @@ class GridPaper(QLabel):
     def setupGrid(self):
         self.paperW, self.paperH = 1800, 1200
         self.W, self.H = 413, 531
-        self.col, self.row = 4, 2           # total no. of columns and rows
-        self.spacingX, self.spacingY = (self.paperW-self.col*self.W)/(self.col+1), (self.paperH-self.row*self.H)/(self.row+1)
+        self.cols, self.rows = 4, 2           # total no. of columns and rows
+        self.spacingX, self.spacingY = (self.paperW-self.cols*self.W)/(self.cols+1), (self.paperH-self.rows*self.H)/(self.rows+1)
         # Setup Foreground Grid
         w, h = self.W/2, self.H/2
-        spacingX, spacingY = self.spacingX/2, self.spacingY/2
-        for i in range(self.col*self.row):
-            row, col = i//self.col, i%self.col        # Position of the box as row & col
-            box = QRect(spacingX+col*(spacingX+w), spacingY+row*(spacingY+h), w-1, h-1)
+        spacing_x, spacing_y = self.spacingX/2, self.spacingY/2
+        for i in range(self.cols*self.rows):
+            row, col = i//self.cols, i%self.cols        # Position of the box as row & col
+            box = QRect(spacing_x+col*(spacing_x+w), spacing_y+row*(spacing_y+h), w-1, h-1)
             #print(spacingX+col*(spacingX+w), spacingY+row*(spacingY+h), w, h)
             self.boxes.append(box)
         fg = QPixmap(self.paperW/2, self.paperH/2)
@@ -152,7 +152,7 @@ class GridPaper(QLabel):
         self.photo_grid.fill()
         painter = QPainter(self.photo_grid)
         for index in self.pixmap_dict:
-            row, col = index//self.col, index%self.col
+            row, col = index//self.cols, index%self.cols
             topleft = QPoint(self.spacingX+col*(self.spacingX+self.W), self.spacingY+row*(self.spacingY+self.H))
             pm = self.pixmap_dict[index].scaled(self.W, self.H, 1, 1)
             painter.drawPixmap(topleft, pm)

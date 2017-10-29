@@ -7,6 +7,7 @@ Debian Dependency = python3-pyqt5
 Description = A simple useful image viewer with some useful features.
 Changes :
         Fixed : little inaccuracy atter cropping downscaled image.
+        Fixed : wrong resolution while cropping image after clicking zoomIn Button.
 
 ...........................................................................
 |   Copyright (C) 2017 Arindam Chaudhuri <ksharindam@gmail.com>       |

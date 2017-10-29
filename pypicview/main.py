@@ -36,9 +36,6 @@ class Image(QLabel):
     def setImage(self, pixmap):
         self.pic = pixmap                # Save original pixmap
         self.showScaled()
-        # These gives better accuracy while cropping downscaled image
-        self.scaleW = self.pixmap().width()/self.pic.width()
-        self.scaleH = self.pixmap().height()/self.pic.height()
         self.animation = False
 
     def showScaled(self):
@@ -62,6 +59,9 @@ class Image(QLabel):
     def enableCropMode(self, enable):
         if enable:
             self.crop_mode = True
+            # scaleW, scaleH give better accuracy while cropping downscaled image
+            self.scaleW = self.pixmap().width()/self.pic.width()
+            self.scaleH = self.pixmap().height()/self.pic.height()
             self.pm_tmp = self.pixmap().copy()
             self.topleft = QPoint(0,0)
             self.btmright = QPoint(self.pixmap().width()-1, self.pixmap().height()-1)
