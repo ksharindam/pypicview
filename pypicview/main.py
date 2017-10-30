@@ -106,15 +106,15 @@ class Image(QLabel):
             new_p1 = self.topleft + moved
             self.p1 = QPoint(max(0, new_p1.x()), max(0, new_p1.y()))
             if self.lock_crop_ratio:
-                if self.imgAspect>boxAspect: self.p1.setX(self.p2.x() - (self.p2.y()-self.p1.y()+1)*boxAspect -1)
-                if self.imgAspect<boxAspect: self.p1.setY(self.p2.y() - (self.p2.x()-self.p1.x()+1)/boxAspect -1)
+                if self.imgAspect>boxAspect: self.p1.setX(round(self.p2.x() - (self.p2.y()-self.p1.y()+1)*boxAspect -1))
+                if self.imgAspect<boxAspect: self.p1.setY(round(self.p2.y() - (self.p2.x()-self.p1.x()+1)/boxAspect -1))
 
         elif self.clk_area == 2: # Bottom right corner is clicked
             new_p2 = self.btmright + moved
             self.p2 = QPoint(min(self.last_pt.x(), new_p2.x()), min(self.last_pt.y(), new_p2.y()))
             if self.lock_crop_ratio:
-                if self.imgAspect>boxAspect: self.p2.setX(self.p1.x() + (self.p2.y()-self.p1.y()+1)*boxAspect -1)
-                if self.imgAspect<boxAspect: self.p2.setY(self.p1.y() + (self.p2.x()-self.p1.x()+1)/boxAspect -1)
+                if self.imgAspect>boxAspect: self.p2.setX(round(self.p1.x() + (self.p2.y()-self.p1.y()+1)*boxAspect -1))
+                if self.imgAspect<boxAspect: self.p2.setY(round(self.p1.y() + (self.p2.x()-self.p1.x()+1)/boxAspect -1))
             
         elif self.clk_area == 3: # clicked inside cropbox but none of the corner selected.
             min_dx, max_dx = -self.topleft.x(), self.last_pt.x()-self.btmright.x()
@@ -152,8 +152,8 @@ class Image(QLabel):
         self.crop_height = value
 
     def cropImage(self):
-        w, h = (self.btmright.x()-self.topleft.x()+1)/self.scaleW, (self.btmright.y()-self.topleft.y()+1)/self.scaleH
-        pm = self.pic.copy(self.topleft.x()/self.scaleW, self.topleft.y()/self.scaleH, w, h)
+        w, h = round((self.btmright.x()-self.topleft.x()+1)/self.scaleW), round((self.btmright.y()-self.topleft.y()+1)/self.scaleH)
+        pm = self.pic.copy(round(self.topleft.x()/self.scaleW), round(self.topleft.y()/self.scaleH), w, h)
         self.setImage(pm)
 
 
@@ -416,8 +416,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def updateStatus(self):
         if self.image.crop_mode:
-            width = (self.image.p2.x() - self.image.p1.x() + 1)/self.image.scaleW
-            height = (self.image.p2.y() - self.image.p1.y() + 1)/self.image.scaleH
+            width = round((self.image.p2.x() - self.image.p1.x() + 1)/self.image.scaleW)
+            height = round((self.image.p2.y() - self.image.p1.y() + 1)/self.image.scaleH)
         else:
             width = self.image.pic.width()
             height = self.image.pic.height()

@@ -9,6 +9,7 @@ Changes :
         Fixed : little inaccuracy atter cropping downscaled image.
         Fixed : wrong resolution while cropping image after clicking zoomIn Button.
         Fixed : wrong prediction of window width.
+        Accuracy of image resolution increased while cropping with locked ratio
 
 ...........................................................................
 |   Copyright (C) 2017 Arindam Chaudhuri <ksharindam@gmail.com>       |
