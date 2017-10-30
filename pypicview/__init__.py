@@ -8,6 +8,7 @@ Description = A simple useful image viewer with some useful features.
 Changes :
         Fixed : little inaccuracy atter cropping downscaled image.
         Fixed : wrong resolution while cropping image after clicking zoomIn Button.
+        Fixed : wrong prediction of window width.
 
 ...........................................................................
 |   Copyright (C) 2017 Arindam Chaudhuri <ksharindam@gmail.com>       |

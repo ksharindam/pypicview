@@ -176,6 +176,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.filepath = ''
         self.offset_x = int(self.settings.value("OffsetX", 4))
         self.offset_y = int(self.settings.value("OffsetY", 26))
+        self.btnboxwidth = int(self.settings.value("BtnBoxWidth", 60))
         self.crop_widgets = []
 
     def connectSignals(self):
@@ -391,8 +392,7 @@ class Window(QMainWindow, Ui_MainWindow):
     def getOptimumScale(self, pixmap):
         img_width = pixmap.width()
         img_height = pixmap.height()
-        btnboxwidth = self.frame.width()
-        max_width = self.screen_width - (2*btnboxwidth + 2*self.offset_x)
+        max_width = self.screen_width - (2*self.btnboxwidth + 2*self.offset_x)
         max_height = self.screen_height - (self.offset_y + self.offset_x + 4+32) # 32 for statusbar with buttons
         if img_width > max_width or img_height > max_height :
             if (max_width/max_height > img_width/img_height) :
@@ -404,13 +404,12 @@ class Window(QMainWindow, Ui_MainWindow):
         return scale
 
     def adjustWindowSize(self, animation=False):
-        btnboxwidth = self.frame.width()
         if animation:
             wait(30)        # Wait little to let Label resize and get correct width height
-            self.resize(self.image.width() + 2*btnboxwidth + 4, 
+            self.resize(self.image.width() + 2*self.btnboxwidth + 4, 
                     self.image.height() + 4+32)
         else:
-            self.resize(self.image.pixmap().width() + 2*btnboxwidth + 4, 
+            self.resize(self.image.pixmap().width() + 2*self.btnboxwidth + 4, 
                     self.image.pixmap().height() + 4+32)
         self.move((self.screen_width - (self.width() + 2*self.offset_x) )/2, 
                   (self.screen_height - (self.height() + self.offset_x + self.offset_y))/2 )
@@ -439,6 +438,7 @@ class Window(QMainWindow, Ui_MainWindow):
     def closeEvent(self, ev):
         self.settings.setValue('OffsetX', self.geometry().x()-self.x())
         self.settings.setValue('OffsetY', self.geometry().y()-self.y())
+        self.settings.setValue('BtnBoxWidth', self.frame.width())
         QMainWindow.closeEvent(self, ev)
 
 class ResizeDialog(QDialog, Ui_ResizeDialog):
