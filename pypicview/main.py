@@ -479,6 +479,7 @@ def main():
     app.setOrganizationName("pypicview")
     app.setApplicationName("pypicview")
     win = Window()
+    win.show()
     if len(sys.argv)>1 :
         path = os.path.abspath(sys.argv[-1])
         if os.path.exists(path):
@@ -488,7 +489,6 @@ def main():
         win.image.setImage(pm)
         win.adjustWindowSize()
 
-    win.show()
     sys.exit(app.exec_())
 
 if __name__== '__main__':
