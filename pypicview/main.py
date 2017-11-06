@@ -221,14 +221,14 @@ class Window(QMainWindow, Ui_MainWindow):
             filefilter = "Image files (*.jpg *.png *.jpeg *.svg *.gif);;JPEG Images (*.jpg *.jpeg);;All Files (*)"
             filepath, sel_filter = QFileDialog.getOpenFileName(self, 'Open Image', self.filepath, filefilter)            
             if filepath == '' : return
-        if filepath.endswith('.gif'): # For gif animations
+        image_reader = QImageReader(filepath)
+        if image_reader.format() == 'gif': # For gif animations
             anim = QMovie(filepath)
             self.image.setAnimation(anim)
             self.adjustWindowSize(True)
             self.statusbar.showMessage("Resolution : %ix%i" % (self.image.width(), self.image.height()))
             self.disableButtons(True)
         else:                         # For static images
-          image_reader = QImageReader(filepath)
           image_reader.setAutoTransform(True)
           pm = QPixmap.fromImageReader(image_reader)
           if not pm.isNull() :

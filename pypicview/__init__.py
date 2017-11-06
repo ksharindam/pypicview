@@ -10,6 +10,7 @@ Changes :
         Fixed : wrong resolution while cropping image after clicking zoomIn Button.
         Fixed : wrong prediction of window width.
         Accuracy of image resolution increased while cropping with locked ratio
+        Image format is now determined using QImageReader
 
 ...........................................................................
 |   Copyright (C) 2017 Arindam Chaudhuri <ksharindam@gmail.com>       |
