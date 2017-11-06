@@ -404,6 +404,7 @@ class Window(QMainWindow, Ui_MainWindow):
         return scale
 
     def adjustWindowSize(self, animation=False):
+        if self.isMaximized() : return
         if animation:
             wait(30)        # Wait little to let Label resize and get correct width height
             self.resize(self.image.width() + 2*self.btnboxwidth + 4, 

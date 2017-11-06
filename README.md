@@ -1,7 +1,7 @@
 # pyPicView
 A simple image viewer with some useful features (written in pyqt5).
 
-**Dependency** = python3-pyqt5
+**Dependency** = python3-pyqt5, libqt5-svg
 
 ### Description
 This program is aimed at ease of use, quick opening, and doing most necessary features.  

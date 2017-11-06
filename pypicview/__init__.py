@@ -11,6 +11,7 @@ Changes :
         Fixed : wrong prediction of window width.
         Accuracy of image resolution increased while cropping with locked ratio
         Image format is now determined using QImageReader
+        Dont move window if window is maximized
 
 ...........................................................................
 |   Copyright (C) 2017 Arindam Chaudhuri <ksharindam@gmail.com>       |
