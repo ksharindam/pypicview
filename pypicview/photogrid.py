@@ -1,7 +1,8 @@
 from photogrid_dialog import Ui_GridDialog
+from gridsetup_dialog import Ui_GridSetupDialog
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QRect, QPoint
 from PyQt5.QtGui import QPixmap, QPainter, QImageReader, QPen
-from PyQt5.QtWidgets import QLabel, QDialog, QHBoxLayout, QSizePolicy, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QApplication, QLabel, QDialog, QHBoxLayout, QSizePolicy, QFileDialog, QMessageBox
 
 helptext = '''Click on a image thumbnail to select an image to drop. Then click on the blank boxes to drop the selected photo.
 
@@ -24,9 +25,22 @@ class GridDialog(QDialog, Ui_GridDialog):
         thumbnail.select(True)
         thumbnail.clicked.connect(self.gridPaper.setPhoto)
         self.thumbnailGr.append(thumbnail)
+        self.configureBtn.clicked.connect(self.configure)
         self.addPhotoBtn.clicked.connect(self.addPhoto)
         self.helpBtn.clicked.connect(self.showHelp)
         self.gridPaper.photo = pixmap
+
+    def configure(self):
+        dialog = GridSetupDialog(self)
+        if dialog.exec_()==1:
+            self.gridPaper.paperW = dialog.paperW
+            self.gridPaper.paperH = dialog.paperH
+            self.gridPaper.rows = dialog.rows
+            self.gridPaper.cols = dialog.cols
+            self.gridPaper.W = dialog.W
+            self.gridPaper.H = dialog.H
+            self.gridPaper.DPI = dialog.DPI
+            self.gridPaper.setupGrid()
 
     def addPhoto(self):
         filepath, sel_filter = QFileDialog.getOpenFileName(self, 'Open Image', '')            
@@ -93,25 +107,27 @@ class GridPaper(QLabel):
         QLabel.__init__(self, parent)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.setMouseTracking(True)
-        #self.scale = 1.0
         self.pixmap_dict = {}
-        self.boxes = []
-        self.setupGrid()
-
-    def setupGrid(self):
+        self.DPI = 300
         self.paperW, self.paperH = 1800, 1200
         self.W, self.H = 413, 531
         self.cols, self.rows = 4, 2           # total no. of columns and rows
+        self.setupGrid()
+
+    def setupGrid(self):
+        self.boxes = []
         self.spacingX, self.spacingY = (self.paperW-self.cols*self.W)/(self.cols+1), (self.paperH-self.rows*self.H)/(self.rows+1)
         # Setup Foreground Grid
-        w, h = self.W/2, self.H/2
-        spacing_x, spacing_y = self.spacingX/2, self.spacingY/2
+        screenDPI = QApplication.desktop().logicalDpiX()
+        self.scale = screenDPI/self.DPI
+        w, h = self.W*self.scale, self.H*self.scale
+        spacing_x, spacing_y = self.spacingX*self.scale, self.spacingY*self.scale
         for i in range(self.cols*self.rows):
             row, col = i//self.cols, i%self.cols        # Position of the box as row & col
             box = QRect(spacing_x+col*(spacing_x+w), spacing_y+row*(spacing_y+h), w-1, h-1)
             #print(spacingX+col*(spacingX+w), spacingY+row*(spacingY+h), w, h)
             self.boxes.append(box)
-        fg = QPixmap(self.paperW/2, self.paperH/2)
+        fg = QPixmap(self.paperW*self.scale, self.paperH*self.scale)
         fg.fill()
         painter = QPainter(fg)
         for box in self.boxes:
@@ -131,13 +147,13 @@ class GridPaper(QLabel):
         self.setCursor(Qt.ArrowCursor)
 
     def mousePressEvent(self, ev):
-        blank_pm = QPixmap(self.W/2, self.H/2)
+        blank_pm = QPixmap(self.W*self.scale, self.H*self.scale)
         blank_pm.fill()
         for box in self.boxes:
             if box.contains(ev.pos()):
                 topleft = box.topLeft()
                 #print(topleft.x(), topleft.y())
-                pm = self.photo.scaled(self.W/2, self.H/2, 1, 1)
+                pm = self.photo.scaled(self.W*self.scale, self.H*self.scale, 1, 1)
                 bg = self.pixmap()
                 painter = QPainter(bg)
                 painter.drawPixmap(topleft, blank_pm) # Erase older image by placing blank image over it
@@ -159,4 +175,31 @@ class GridPaper(QLabel):
         painter.end()
 
 
+class GridSetupDialog(QDialog, Ui_GridSetupDialog):
+    def __init__(self, parent):
+        QDialog.__init__(self, parent)
+        self.setupUi(self)
 
+    def accept(self):
+        units = [1, 1/2.54, 1/25.4]
+        DPI = self.spinDPI.value()
+        unit_mult = units[self.paperSizeUnit.currentIndex()]
+        paperW = self.spinPaperWidth.value()*unit_mult*DPI
+        paperH = self.spinPaperHeight.value()*unit_mult*DPI
+        W, H = self.spinPhotoWidth.value()*DPI/2.54, self.spinPhotoHeight.value()*DPI/2.54
+        rows1, cols1 = int(paperH//H), int(paperW//W)
+        rows2, cols2 = int(paperW//H), int(paperH//W)
+        if rows1*cols1 >= rows2*cols2:
+            self.paperW = paperW
+            self.paperH = paperH
+            self.rows = rows1
+            self.cols = cols1
+        else:
+            self.paperW = paperH
+            self.paperH = paperW
+            self.rows = rows2
+            self.cols = cols2
+        self.W = W
+        self.H = H
+        self.DPI = DPI
+        QDialog.accept(self)

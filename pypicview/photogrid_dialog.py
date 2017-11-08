@@ -23,6 +23,9 @@ class Ui_GridDialog(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.frame)
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.configureBtn = QtWidgets.QPushButton(self.frame)
+        self.configureBtn.setObjectName("configureBtn")
+        self.verticalLayout.addWidget(self.configureBtn)
         self.addPhotoBtn = QtWidgets.QPushButton(self.frame)
         self.addPhotoBtn.setObjectName("addPhotoBtn")
         self.verticalLayout.addWidget(self.addPhotoBtn)
@@ -55,6 +58,7 @@ class Ui_GridDialog(object):
     def retranslateUi(self, GridDialog):
         _translate = QtCore.QCoreApplication.translate
         GridDialog.setWindowTitle(_translate("GridDialog", "Create Photo Grid"))
+        self.configureBtn.setText(_translate("GridDialog", "Configure"))
         self.addPhotoBtn.setText(_translate("GridDialog", "Add Photo"))
         self.helpBtn.setText(_translate("GridDialog", "Help"))
 

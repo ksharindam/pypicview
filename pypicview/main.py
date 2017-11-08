@@ -412,8 +412,8 @@ class Window(QMainWindow, Ui_MainWindow):
         else:
             self.resize(self.image.pixmap().width() + 2*self.btnboxwidth + 4, 
                     self.image.pixmap().height() + 4+32)
-        self.move((self.screen_width - (self.width() + 2*self.offset_x) )/2, 
-                  (self.screen_height - (self.height() + self.offset_x + self.offset_y))/2 )
+        self.move((self.screen_width - (self.width() + 2*self.offset_x) )/2+self.offset_x, 
+                  (self.screen_height - (self.height() + self.offset_x + self.offset_y))/2+self.offset_y )
 
     def updateStatus(self):
         if self.image.crop_mode:
