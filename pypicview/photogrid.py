@@ -27,6 +27,7 @@ class GridDialog(QDialog, Ui_GridDialog):
         self.thumbnailGr.append(thumbnail)
         self.configureBtn.clicked.connect(self.configure)
         self.addPhotoBtn.clicked.connect(self.addPhoto)
+        self.checkAddBorder.clicked.connect(self.gridPaper.toggleBorder)
         self.helpBtn.clicked.connect(self.showHelp)
         self.gridPaper.photo = pixmap
 
@@ -108,6 +109,7 @@ class GridPaper(QLabel):
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.setMouseTracking(True)
         self.pixmap_dict = {}
+        self.add_border = True
         self.DPI = 300
         self.paperW, self.paperH = 1800, 1200
         self.W, self.H = 413, 531
@@ -115,7 +117,7 @@ class GridPaper(QLabel):
         self.setupGrid()
 
     def setupGrid(self):
-        self.boxes = []
+        self.boxes = []         # The rectangles which determines where to place image
         self.spacingX, self.spacingY = (self.paperW-self.cols*self.W)/(self.cols+1), (self.paperH-self.rows*self.H)/(self.rows+1)
         # Setup Foreground Grid
         screenDPI = QApplication.desktop().logicalDpiX()
@@ -138,6 +140,18 @@ class GridPaper(QLabel):
     def setPhoto(self, pixmap):
         self.photo = pixmap
 
+    def toggleBorder(self, ok):
+        self.add_border = ok
+        grid = self.pixmap()
+        painter = QPainter(grid)
+        for index in self.pixmap_dict:
+            topleft = self.boxes[index].topLeft()
+            pm = self.pixmap_dict[index].scaled(self.W*self.scale, self.H*self.scale, 1, 1)
+            painter.drawPixmap(topleft, pm)
+            if ok: painter.drawRect(topleft.x(), topleft.y(), pm.width()-1, pm.height()-1)
+        painter.end()
+        self.setPixmap(grid)
+
     def mouseMoveEvent(self, ev):
         # Change cursor whenever cursor comes over a box
         for box in self.boxes:
@@ -158,6 +172,8 @@ class GridPaper(QLabel):
                 painter = QPainter(bg)
                 painter.drawPixmap(topleft, blank_pm) # Erase older image by placing blank image over it
                 painter.drawPixmap(topleft, pm)
+                if self.add_border:
+                    painter.drawRect(topleft.x(), topleft.y(), pm.width()-1, pm.height()-1)
                 painter.end()
                 self.setPixmap(bg)
                 self.pixmap_dict[self.boxes.index(box)] = self.photo
@@ -172,6 +188,8 @@ class GridPaper(QLabel):
             topleft = QPoint(self.spacingX+col*(self.spacingX+self.W), self.spacingY+row*(self.spacingY+self.H))
             pm = self.pixmap_dict[index].scaled(self.W, self.H, 1, 1)
             painter.drawPixmap(topleft, pm)
+            if self.add_border:
+                painter.drawRect(topleft.x(), topleft.y(), pm.width()-1, pm.height()-1)
         painter.end()
 
 
