@@ -218,7 +218,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def openFile(self, filepath=False):
         if not filepath :
-            filefilter = "Image files (*.jpg *.png *.jpeg *.svg *.gif);;JPEG Images (*.jpg *.jpeg);;All Files (*)"
+            filefilter = "Image files (*.jpg *.png *.jpeg *.svg *.gif *.tiff *.ppm *.bmp);;JPEG Images (*.jpg *.jpeg);;PNG Images (*.png);;SVG Images (*.svg);;All Files (*)"
             filepath, sel_filter = QFileDialog.getOpenFileName(self, 'Open Image', self.filepath, filefilter)            
             if filepath == '' : return
         image_reader = QImageReader(filepath)
@@ -243,7 +243,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def saveFile(self):
         quality = -1
-        filefilter = "Image files (*.jpg *.png *.jpeg);;JPEG Images (*.jpg *.jpeg)"
+        filefilter = "Image files (*.jpg *.png *.jpeg *.ppm *.bmp *.tiff);;JPEG Image (*.jpg);;PNG Image (*.png);;Tagged Image (*.tiff);;Portable Pixmap (*.ppm);;X11 Pixmap (*.xpm);;Windows Bitmap (*.bmp)"
         filepath, sel_filter = QFileDialog.getSaveFileName(self, 'Save Image', self.filepath, filefilter)
         if filepath != '':
             if sel_filter=='JPEG Images (*.jpg *.jpeg)':

@@ -12,6 +12,7 @@ Changes :
         Accuracy of image resolution increased while cropping with locked ratio
         Image format is now determined using QImageReader
         Dont move window if window is maximized
+        Photogrid is now configurable.
 
 ...........................................................................
 |   Copyright (C) 2017 Arindam Chaudhuri <ksharindam@gmail.com>       |
@@ -31,6 +32,6 @@ Changes :
 ...........................................................................
 """
 #TODO : 
-#       
+#      Convert to grayscale in photo grid 
 
-__version__ = '1.1'
+__version__ = '1.2'
