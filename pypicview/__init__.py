@@ -6,14 +6,7 @@ Python Module Name = pypicview
 Debian Dependency = python3-pyqt5
 Description = A simple useful image viewer with some useful features.
 Changes :
-        Fixed : little inaccuracy atter cropping downscaled image.
-        Fixed : wrong resolution while cropping image after clicking zoomIn Button.
-        Fixed : wrong prediction of window width.
-        Accuracy of image resolution increased while cropping with locked ratio
-        Image format is now determined using QImageReader
-        Dont move window if window is maximized
-        Photogrid is now configurable.
-
+        Photogrid configuration is now saved
 ...........................................................................
 |   Copyright (C) 2017 Arindam Chaudhuri <ksharindam@gmail.com>       |
 |                                                                          |
@@ -34,4 +27,4 @@ Changes :
 #TODO : 
 #      Convert to grayscale in photo grid 
 
-__version__ = '1.2'
+__version__ = '1.2.1'

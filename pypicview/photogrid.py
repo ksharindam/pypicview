@@ -1,6 +1,6 @@
 from photogrid_dialog import Ui_GridDialog
 from gridsetup_dialog import Ui_GridSetupDialog
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QRect, QPoint
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QRect, QPoint, QSettings
 from PyQt5.QtGui import QPixmap, QPainter, QImageReader, QPen
 from PyQt5.QtWidgets import QApplication, QLabel, QDialog, QHBoxLayout, QSizePolicy, QFileDialog, QMessageBox
 
@@ -111,10 +111,13 @@ class GridPaper(QLabel):
         self.setMouseTracking(True)
         self.pixmap_dict = {}
         self.add_border = True
-        self.DPI = 300
-        self.paperW, self.paperH = 1800, 1200
-        self.W, self.H = 413, 531
-        self.cols, self.rows = 4, 2           # total no. of columns and rows
+        settings = QSettings(self)
+        self.DPI = int(settings.value("DPI", 300))
+        self.paperW = float(settings.value("PaperWidth", 1800))
+        self.paperH = float(settings.value("PaperHeight", 1200))
+        self.W = float(settings.value("ImageWidth", 413))
+        self.H = float(settings.value("ImageHeight", 531))
+        self.paperW, self.paperH, self.rows, self.cols = getRowsCols(self.paperW, self.paperH, self.W, self.H)           # total no. of columns and rows
         self.setupGrid()
 
     def setupGrid(self):
@@ -206,19 +209,23 @@ class GridSetupDialog(QDialog, Ui_GridSetupDialog):
         paperW = self.spinPaperWidth.value()*unit_mult*DPI
         paperH = self.spinPaperHeight.value()*unit_mult*DPI
         W, H = self.spinPhotoWidth.value()*DPI/2.54, self.spinPhotoHeight.value()*DPI/2.54
-        rows1, cols1 = int(paperH//H), int(paperW//W)
-        rows2, cols2 = int(paperW//H), int(paperH//W)
-        if rows1*cols1 >= rows2*cols2:
-            self.paperW = paperW
-            self.paperH = paperH
-            self.rows = rows1
-            self.cols = cols1
-        else:
-            self.paperW = paperH
-            self.paperH = paperW
-            self.rows = rows2
-            self.cols = cols2
+        self.paperW, self.paperH, self.rows, self.cols = getRowsCols(paperW, paperH, W, H)
         self.W = W
         self.H = H
         self.DPI = DPI
+        settings = QSettings(self)
+        settings.setValue("DPI", self.DPI)
+        settings.setValue("PaperWidth", self.paperW)
+        settings.setValue("PaperHeight", self.paperH)
+        settings.setValue("ImageWidth", self.W)
+        settings.setValue("ImageHeight", self.H)
         QDialog.accept(self)
+
+def getRowsCols(paperW, paperH, W, H):
+    ''' Input : int paper_width, int paper_height, int image_width, int image_height
+        Rerurns paper width, paper height, rows, cols'''
+    rows1, cols1 = int(paperH//H), int(paperW//W)
+    rows2, cols2 = int(paperW//H), int(paperH//W)
+    if rows1*cols1 >= rows2*cols2:
+        return paperW, paperH, rows1, cols1
+    return paperH, paperW, rows2, cols2
