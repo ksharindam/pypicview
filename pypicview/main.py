@@ -4,7 +4,7 @@ import sys, os
 sys.path.append(os.path.dirname(__file__)) # A workout for enabling python 2 like import
 from __init__ import __version__
 
-from PyQt5.QtCore import (pyqtSignal, QPoint, Qt, QSettings, QFileInfo, QTimer, QRect, QSize, QEventLoop, QSettings )
+from PyQt5.QtCore import (pyqtSignal, QPoint, Qt, QSettings, QFileInfo, QTimer, QRect, QSize, QEventLoop )
 from PyQt5.QtGui import QIcon, QPainter, QPen, QColor, QPixmap, QImageReader, QMovie, QTransform, QIntValidator
 from PyQt5.QtWidgets import ( QApplication, QMainWindow, QLabel, QHBoxLayout, QSizePolicy, 
         QDialog, QFileDialog, QInputDialog, QCheckBox, QDoubleSpinBox, QPushButton )
@@ -17,8 +17,10 @@ from photogrid import GridDialog
 class Image(QLabel):
     ''' This is the image widget responsible for displaying image '''
     imageUpdated = pyqtSignal()
-    def __init__(self, *args):
-        QLabel.__init__(self, *args)
+    def __init__(self, parent, scrollArea):
+        QLabel.__init__(self, parent)
+        self.vScrollbar = scrollArea.verticalScrollBar()
+        self.hScrollbar = scrollArea.horizontalScrollBar()
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.setMouseTracking(True)
         self.mouse_pressed = False
@@ -77,9 +79,12 @@ class Image(QLabel):
             self.showScaled()
 
     def mousePressEvent(self, ev):
-        if not self.crop_mode : return
-        self.mouse_pressed = True
         self.clk_pos = ev.pos()
+        self.clk_global = ev.globalPos()
+        self.v_scrollbar_pos = self.vScrollbar.value()
+        self.h_scrollbar_pos = self.hScrollbar.value()
+        self.mouse_pressed = True
+        if not self.crop_mode : return
         self.p1, self.p2 = QPoint(self.topleft), QPoint(self.btmright) # Save initial pos of cropbox
         # Determine which position is clicked
         if QRect(self.topleft, QSize(60, 60)).contains(self.clk_pos): # Topleft is clicked
@@ -92,13 +97,19 @@ class Image(QLabel):
             self.clk_area = 0
 
     def mouseReleaseEvent(self, ev):
-        if not self.crop_mode: return
         self.mouse_pressed = False
+        if not self.crop_mode: return
         self.topleft, self.btmright = self.p1, self.p2
         #print(self.p1.x(), self.p1.y(), self.p2.x()/self.scale, self.p2.y()/self.scale)
 
     def mouseMoveEvent(self, ev):
-        if not (self.mouse_pressed and self.crop_mode) : return
+        if not self.mouse_pressed : return
+        if not self.crop_mode:
+            # Handle click and drag to scroll
+            self.vScrollbar.setValue(self.v_scrollbar_pos + self.clk_global.y() - ev.globalY())
+            self.hScrollbar.setValue(self.h_scrollbar_pos + self.clk_global.x() - ev.globalX())
+            return
+        # Handle crop mode
         moved = ev.pos() - self.clk_pos
         boxAspect = self.crop_width/self.crop_height
 
@@ -163,7 +174,7 @@ class Window(QMainWindow, Ui_MainWindow):
         Ui_MainWindow.setupUi(self, self)
         layout = QHBoxLayout(self.scrollAreaWidgetContents)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.image = Image(self)
+        self.image = Image(self, self.scrollArea)
         layout.addWidget(self.image)
         self.slideShowBtn.setCheckable(True)
         self.connectSignals()
